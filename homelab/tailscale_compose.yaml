@@ -18,6 +18,7 @@ services:
       - coolify
       - hiym9vlva60bp7lduwfln4fj
       - ith13tgxvl3kh59c2v9qpnzb
+      - zj8xtro874hdxc38phvprob6
     healthcheck:
       test:
         - CMD-SHELL
@@ -110,6 +111,24 @@ services:
                     proxy_read_timeout 600s;
                 }
 
+                location /n8n/ {
+                    proxy_pass http://n8n:5678;
+                    proxy_set_header Host $$host;
+                    proxy_set_header X-Real-IP $$remote_addr;
+                    proxy_set_header X-Forwarded-For $$proxy_add_x_forwarded_for;
+                    proxy_set_header X-Forwarded-Proto https;
+                    proxy_http_version 1.1;
+                    proxy_set_header Upgrade $$http_upgrade;
+                    proxy_set_header Connection "upgrade";
+                    proxy_connect_timeout 60s;
+                    proxy_send_timeout 60s;
+                    proxy_read_timeout 600s;
+                }
+
+                location = /n8n {
+                    return 301 $$scheme://$$http_host/n8n/;
+                }
+
                 location / {
                     proxy_pass http://coolify:8080;
                     proxy_set_header Host $$host;
@@ -144,6 +163,8 @@ networks:
   hiym9vlva60bp7lduwfln4fj:
     external: true
   ith13tgxvl3kh59c2v9qpnzb:
+    external: true
+  zj8xtro874hdxc38phvprob6:
     external: true
 volumes:
   tailscale-client: null
