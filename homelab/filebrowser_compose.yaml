@@ -1,0 +1,23 @@
+###fb docker compose
+###http://coolify-ts.angora-triggerfish.ts.net:80
+### pw: djY2jY6qyxafzooS
+
+services:
+  filebrowser:
+    image: 'filebrowser/filebrowser:latest'
+    environment:
+      - SERVICE_URL_FILEBROWSER_80
+    user: '1010:1010'
+    volumes:
+      -
+        type: bind
+        source: /srv/media
+        target: /srv
+      -
+        type: bind
+        source: ./config
+        target: /config
+      -
+        type: bind
+        source: ./database
+        target: /database
