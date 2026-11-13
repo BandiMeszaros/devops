@@ -2,6 +2,8 @@ services:
   tailscale-client:
     image: 'tailscale/tailscale:latest'
     hostname: '${TS_HOSTNAME:-coolify-ts}'
+    ports:
+      - '32400:32400'
     environment:
       - 'TS_HOSTNAME=${TS_HOSTNAME:-coolify-ts}'
       - 'TS_AUTHKEY=${TS_AUTHKEY:?}'
@@ -18,7 +20,7 @@ services:
       - coolify
       - hiym9vlva60bp7lduwfln4fj
       - ith13tgxvl3kh59c2v9qpnzb
-      - zj8xtro874hdxc38phvprob6
+      - jfxr7n8qtnmb2hvrd8yqw69c
     healthcheck:
       test:
         - CMD-SHELL
@@ -36,116 +38,7 @@ services:
     entrypoint:
       - /bin/sh
       - '-c'
-      - |
-        cat << 'INNER_EOF' > /var/lib/tailscale/serve.json
-        {
-          "TCP": {
-            "443": {
-              "HTTPS": true
-            }
-          },
-          "Web": {
-            "$${TS_CERT_DOMAIN}:443": {
-              "Handlers": {
-                "/": {
-                  "Proxy": "http://127.0.0.1:80"
-                }
-              }
-            }
-          }
-        }
-        INNER_EOF
-        cat << 'INNER_EOF' > /etc/nginx/nginx.conf
-        user nginx;
-        worker_processes auto;
-        error_log /var/log/nginx/error.log notice;
-        pid /var/run/nginx.pid;
-        events {
-            worker_connections 1024;
-        }
-        http {
-            include /etc/nginx/mime.types;
-            default_type application/octet-stream;
-            sendfile on;
-            keepalive_timeout 65;
-
-            server {
-                listen 80;
-                listen [::]:80;
-                server_name localhost 127.0.0.1 ::1;
-                location / {
-                    return 200 'OK';
-                    add_header Content-Type text/plain;
-                }
-            }
-
-            server {
-                listen 80 default_server;
-                listen [::]:80 default_server;
-
-                location /transmission/ {
-                    proxy_pass http://transmission:9091/transmission/;
-                    proxy_set_header Host $$host;
-                    proxy_set_header X-Real-IP $$remote_addr;
-                    proxy_set_header X-Forwarded-For $$proxy_add_x_forwarded_for;
-                    proxy_set_header X-Forwarded-Proto https;
-                    proxy_http_version 1.1;
-                    proxy_set_header Upgrade $$http_upgrade;
-                    proxy_set_header Connection "upgrade";
-                    proxy_connect_timeout 60s;
-                    proxy_send_timeout 60s;
-                    proxy_read_timeout 600s;
-                }
-
-                location /filebrowser/ {
-                    proxy_pass http://filebrowser:80/filebrowser/;
-                    proxy_set_header Host $$host;
-                    proxy_set_header X-Real-IP $$remote_addr;
-                    proxy_set_header X-Forwarded-For $$proxy_add_x_forwarded_for;
-                    proxy_set_header X-Forwarded-Proto https;
-                    proxy_http_version 1.1;
-                    proxy_set_header Upgrade $$http_upgrade;
-                    proxy_set_header Connection "upgrade";
-                    proxy_connect_timeout 60s;
-                    proxy_send_timeout 60s;
-                    proxy_read_timeout 600s;
-                }
-
-                location /n8n/ {
-                    proxy_pass http://n8n:5678;
-                    proxy_set_header Host $$host;
-                    proxy_set_header X-Real-IP $$remote_addr;
-                    proxy_set_header X-Forwarded-For $$proxy_add_x_forwarded_for;
-                    proxy_set_header X-Forwarded-Proto https;
-                    proxy_http_version 1.1;
-                    proxy_set_header Upgrade $$http_upgrade;
-                    proxy_set_header Connection "upgrade";
-                    proxy_connect_timeout 60s;
-                    proxy_send_timeout 60s;
-                    proxy_read_timeout 600s;
-                }
-
-                location = /n8n {
-                    return 301 $$scheme://$$http_host/n8n/;
-                }
-
-                location / {
-                    proxy_pass http://coolify:8080;
-                    proxy_set_header Host $$host;
-                    proxy_set_header X-Real-IP $$remote_addr;
-                    proxy_set_header X-Forwarded-For $$proxy_add_x_forwarded_for;
-                    proxy_set_header X-Forwarded-Proto https;
-                    proxy_http_version 1.1;
-                    proxy_set_header Upgrade $$http_upgrade;
-                    proxy_set_header Connection "upgrade";
-                    proxy_connect_timeout 60s;
-                    proxy_send_timeout 60s;
-                    proxy_read_timeout 600s;
-                }
-            }
-        }
-        INNER_EOF
-        exec nginx -g "daemon off;"
+      - "cat << 'INNER_EOF' > /var/lib/tailscale/serve.json\n{\n  \"TCP\": {\n    \"443\": {\n      \"HTTPS\": true\n    }\n  },\n  \"Web\": {\n    \"$${TS_CERT_DOMAIN}:443\": {\n      \"Handlers\": {\n        \"/\": {\n          \"Proxy\": \"http://127.0.0.1:80\"\n        }\n      }\n    }\n  }\n}\nINNER_EOF\ncat << 'INNER_EOF' > /etc/nginx/nginx.conf\nuser nginx;\nworker_processes auto;\nerror_log /var/log/nginx/error.log notice;\npid /var/run/nginx.pid;\nevents {\n    worker_connections 1024;\n}\nhttp {\n    include /etc/nginx/mime.types;\n    default_type application/octet-stream;\n    sendfile on;\n    keepalive_timeout 65;\n\n    server {\n        listen 80;\n        listen [::]:80;\n        server_name localhost 127.0.0.1 ::1;\n        location / {\n            return 200 'OK';\n            add_header Content-Type text/plain;\n        }\n    }\n\n    server {\n        listen 80 default_server;\n        listen [::]:80 default_server;\n\n        location /transmission/ {\n            proxy_pass http://transmission:9091/transmission/;\n            proxy_set_header Host $$host;\n            proxy_set_header X-Real-IP $$remote_addr;\n            proxy_set_header X-Forwarded-For $$proxy_add_x_forwarded_for;\n            proxy_set_header X-Forwarded-Proto https;\n            proxy_http_version 1.1;\n            proxy_set_header Upgrade $$http_upgrade;\n            proxy_set_header Connection \"upgrade\";\n            proxy_connect_timeout 60s;\n            proxy_send_timeout 60s;\n            proxy_read_timeout 600s;\n        }\n\n        location /filebrowser/ {\n            proxy_pass http://filebrowser:80/filebrowser/;\n            proxy_set_header Host $$host;\n            proxy_set_header X-Real-IP $$remote_addr;\n            proxy_set_header X-Forwarded-For $$proxy_add_x_forwarded_for;\n            proxy_set_header X-Forwarded-Proto https;\n            proxy_http_version 1.1;\n            proxy_set_header Upgrade $$http_upgrade;\n            proxy_set_header Connection \"upgrade\";\n            proxy_connect_timeout 60s;\n            proxy_send_timeout 60s;\n            proxy_read_timeout 600s;\n        }\n\n        location / {\n            proxy_pass http://coolify:8080;\n            proxy_set_header Host $$host;\n            proxy_set_header X-Real-IP $$remote_addr;\n            proxy_set_header X-Forwarded-For $$proxy_add_x_forwarded_for;\n            proxy_set_header X-Forwarded-Proto https;\n            proxy_http_version 1.1;\n            proxy_set_header Upgrade $$http_upgrade;\n            proxy_set_header Connection \"upgrade\";\n            proxy_connect_timeout 60s;\n            proxy_send_timeout 60s;\n            proxy_read_timeout 600s;\n        }\n    }\n}\nINNER_EOF\nexec nginx -g \"daemon off;\"\n"
     healthcheck:
       test:
         - CMD
@@ -157,6 +50,29 @@ services:
       interval: 20s
       timeout: 5s
       retries: 3
+  plex:
+    image: 'lscr.io/linuxserver/plex:latest'
+    depends_on:
+      - tailscale-client
+    network_mode: 'service:tailscale-client'
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - 'TZ=${TZ:-Europe/Budapest}'
+      - 'PLEX_CLAIM=${PLEX_CLAIM}'
+    volumes:
+      - 'plex-config:/config'
+      - 'plex-tv:/tv'
+      - '/srv/media/media:/movies:ro'
+    healthcheck:
+      test:
+        - CMD
+        - curl
+        - '-f'
+        - 'http://localhost:32400/identity'
+      interval: 10s
+      timeout: 10s
+      retries: 15
 networks:
   coolify:
     external: true
@@ -164,7 +80,9 @@ networks:
     external: true
   ith13tgxvl3kh59c2v9qpnzb:
     external: true
-  zj8xtro874hdxc38phvprob6:
+  jfxr7n8qtnmb2hvrd8yqw69c:
     external: true
 volumes:
   tailscale-client: null
+  plex-config: null
+  plex-tv: null
