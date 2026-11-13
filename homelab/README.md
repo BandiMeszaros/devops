@@ -1,16 +1,22 @@
-# Homelab Services
+# Homelab
 
-This repository contains the Docker Compose configurations for the services running on my self-hosted homelab server.
+This is a backup repository for my homeserver setup, storing the Docker Compose configurations for my self-hosted services.
+
+> **Note:** These files are tailored to my local environment, host paths, and network setup, and are meant purely as a personal backup rather than a plug-and-play template.
+
+## Services
+
+- `filebrowser_compose.yaml` — [FileBrowser](https://filebrowser.org/) for web-based access to local media storage
+- `mqtt.yaml` — [Eclipse Mosquitto](https://mosquitto.org/) MQTT broker
+- `tailscale_compose.yaml` — [Tailscale](https://tailscale.com/) client, Nginx reverse proxy, and [Plex](https://www.plex.tv/) media server
+- `transmission_compose.yaml` — [Transmission](https://transmissionbt.com/) BitTorrent client
 
 ## Hardware & Environment
-* **Hardware:** [Raspberry Pi 5](https://www.raspberrypi.com/products/raspberry-pi-5/)
-* **Storage:** NVMe SSD via SSD Extension Hat
-* **Orchestration:** [Coolify](https://coolify.io/) — a self-hosted, open-source platform-as-a-service (PaaS) used to orchestrate and manage all services.
 
-## Deployment Setup
-Each `.yaml` file in this directory represents a standalone Docker Compose configuration managed by Coolify. Coolify connects to this Git repository, automatically pulls changes, and redeploys the services, ensuring a clean GitOps workflow.
+- **Hardware:** [Raspberry Pi 5](https://www.raspberrypi.com/products/raspberry-pi-5/)
+- **Storage:** NVMe SSD via SSD Extension Hat
+- **Orchestration:** [Coolify](https://coolify.io/)
 
-## Key Links
-* [Coolify Documentation](https://coolify.io/docs)
-* [Raspberry Pi 5 Hardware Specs](https://www.raspberrypi.com/products/raspberry-pi-5/)
-* [Docker Compose Reference](https://docs.docker.com/compose/)
+## Notes
+
+Each `.yaml` file is a standalone Docker Compose configuration managed through Coolify, with secrets and environment variables configured outside of this repository.
